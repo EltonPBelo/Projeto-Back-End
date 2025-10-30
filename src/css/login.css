@@ -1,0 +1,114 @@
+/* Importa as fontes do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&display=swap');
+
+/* Variáveis de Cor do Tema */
+:root {
+    --theme-primary: #004d40; /* Um verde escuro, como uma luminária de biblioteca */
+    --theme-secondary: #5d4037; /* Um marrom, lembrando madeira */
+    --theme-background: #fdfaf6; /* Um bege, como papel antigo */
+    --theme-text: #333;
+    --font-title: 'Merriweather', serif;
+    --font-body: 'Lato', sans-serif;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--theme-background);
+    color: var(--theme-text);
+    /* Imagem de fundo sutil de uma biblioteca (opcional) */
+    background-image: linear-gradient(rgba(253, 245, 230, 0.9), rgba(253, 245, 230, 0.9)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center center;
+}
+
+/* Wrapper principal para centralizar */
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* O "Card" central */
+.login-container {
+    width: 100%;
+    max-width: 500px;
+    border: none;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.95); /* Fundo branco levemente transparente */
+    backdrop-filter: blur(5px);
+}
+
+/* Títulos */
+.theme-title {
+    font-family: var(--font-title);
+    color: var(--theme-primary);
+    font-weight: 700;
+}
+
+/* Ícone de livro */
+.theme-icon {
+    font-size: 3rem;
+    color: var(--theme-primary);
+}
+
+/* Botões de Seleção de Função */
+.btn-role {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* Botão Primário (Aluno) */
+.btn-primary {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+}
+.btn-primary:hover {
+    background-color: #00382e;
+    border-color: #00382e;
+}
+
+/* Botão Secundário (Admin) */
+.btn-secondary {
+    background-color: var(--theme-secondary);
+    border-color: var(--theme-secondary);
+}
+.btn-secondary:hover {
+    background-color: #432c23;
+    border-color: #432c23;
+}
+
+/* Abas (Login/Cadastro) */
+.nav-tabs .nav-link {
+    color: var(--theme-secondary);
+    font-weight: 700;
+}
+.nav-tabs .nav-link.active {
+    color: var(--theme-primary);
+    border-color: var(--theme-primary) var(--theme-primary) #fff;
+    border-bottom-width: 3px;
+}
+
+/* Botão de Voltar */
+.btn-back {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: var(--theme-secondary);
+    font-weight: 700;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+}
+.btn-back:hover {
+    color: var(--theme-primary);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Inputs do formulário */
+.form-control:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 77, 64, 0.25);
+}
