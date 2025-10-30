@@ -1,58 +1,69 @@
-document.addEventListener("DOMContentLoaded", function() {
+/* eslint-env browser */
 
-    // --- 1. Seleção de Elementos (Telas) ---
-    const roleSelection = document.getElementById('roleSelection');
-    const studentForm = document.getElementById('studentForm');
-    const adminForm = document.getElementById('adminForm');
-    const btnShowStudent = document.getElementById('btnShowStudent');
-    const btnShowAdmin = document.getElementById('btnShowAdmin');
-    const btnBack = document.querySelectorAll('.btn-back');
+// Aguarda o documento estar totalmente carregado
+document.addEventListener('DOMContentLoaded', function () {
+  
+  // --- 1. Seleção de Elementos (Telas) ---
+  const roleSelection = document.getElementById('roleSelection');
+  const studentForm = document.getElementById('studentForm');
+  const adminForm = document.getElementById('adminForm');
+  const btnShowStudent = document.getElementById('btnShowStudent');
+  const btnShowAdmin = document.getElementById('btnShowAdmin');
+  const btnBack = document.querySelectorAll('.btn-back');
 
-    // --- 2. Lógica de Troca de Telas (Igual a antes) ---
+  // --- 2. Lógica de Troca de Telas ---
+  if (btnShowStudent) {
     btnShowStudent.addEventListener('click', () => showPanel(studentForm));
+  }
+  if (btnShowAdmin) {
     btnShowAdmin.addEventListener('click', () => showPanel(adminForm));
-    btnBack.forEach(button => button.addEventListener('click', showRoleSelection));
+  }
+  btnBack.forEach((button) => {
+    button.addEventListener('click', showRoleSelection);
+  });
 
-    function showPanel(panelToShow) {
-        roleSelection.style.display = 'none';
-        studentForm.style.display = 'none';
-        adminForm.style.display = 'none';
-        panelToShow.style.display = 'block';
-    }
-    function showRoleSelection() {
-        roleSelection.style.display = 'block';
-        studentForm.style.display = 'none';
-        adminForm.style.display = 'none';
-    }
+  function showPanel(panelToShow) {
+    if (roleSelection) roleSelection.style.display = 'none';
+    if (studentForm) studentForm.style.display = 'none';
+    if (adminForm) adminForm.style.display = 'none';
+    if (panelToShow) panelToShow.style.display = 'block';
+  }
 
-    // --- 3. SIMULAÇÃO DE LOGIN ---
+  function showRoleSelection() {
+    if (roleSelection) roleSelection.style.display = 'block';
+    if (studentForm) studentForm.style.display = 'none';
+    if (adminForm) adminForm.style.display = 'none';
+  }
 
-    // Seleciona o formulário de Login do Aluno
-    const formStudentLogin = document.getElementById('formStudentLogin');
-    formStudentLogin.addEventListener('submit', function(event) {
-        // Impede o recarregamento da página
-        event.preventDefault(); 
-        
-        // Exibe um alerta simples (opcional)
-        alert('Login (simulado) com sucesso! Redirecionando...');
-        
-        // Redireciona o usuário para a nova página de dashboard
-        window.location.href = 'dashboard-aluno.html';
-    });
+  // --- 3. FUNÇÃO DE SIMULAÇÃO DE LOGIN/CADASTRO ---
 
-    // Seleciona o formulário de Login do Admin
-    const formAdminLogin = document.getElementById('formAdminLogin');
-    formAdminLogin.addEventListener('submit', function(event) {
-        event.preventDefault(); 
-        alert('Login de Admin (simulado) com sucesso! Redirecionando...');
-        
-        // (No futuro, poderíamos redirecionar para 'dashboard-admin.html')
-        // Por enquanto, vamos para o de aluno também como exemplo
-        window.location.href = 'dashboard-aluno.html';
-    });
+  function simularLogin(event) {
+    // Impede o recarregamento da página
+    event.preventDefault();
 
+    // ***** LINHA DO POPUP REMOVIDA DAQUI *****
+    
+    // Redireciona o usuário imediatamente
+    window.location.href = 'dashboard-aluno.html';
+  }
 
-    // (Não precisamos mais dos formulários de *cadastro* para esta simulação)
-    // (Mas você pode adicionar o mesmo redirecionamento para eles se quiser)
+  // --- 4. Adiciona a função a TODOS os formulários ---
 
+  const formStudentLogin = document.getElementById('formStudentLogin');
+  const formStudentRegister = document.getElementById('formStudentRegister');
+  const formAdminLogin = document.getElementById('formAdminLogin');
+  const formAdminRegister = document.getElementById('formAdminRegister');
+
+  if (formStudentLogin) {
+    formStudentLogin.addEventListener('submit', simularLogin);
+  }
+  if (formStudentRegister) {
+    formStudentRegister.addEventListener('submit', simularLogin);
+  }
+  if (formAdminLogin) {
+    formAdminLogin.addEventListener('submit', simularLogin);
+  }
+  if (formAdminRegister) {
+    formAdminRegister.addEventListener('submit', simularLogin);
+  }
 });
