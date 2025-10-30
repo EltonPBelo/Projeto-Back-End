@@ -1,0 +1,41 @@
+/* Corpo da página do dashboard */
+.dashboard-body {
+    /* Reutiliza o fundo do login, mas sem a imagem forte */
+    background-color: var(--theme-background);
+}
+
+/* Barra de Navegação */
+.navbar {
+    background-color: var(--theme-primary); /* Cor principal do tema */
+}
+
+/* Título da Navbar (Biblioteca Digital) */
+.navbar .navbar-brand {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Cards de Ação */
+.action-card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+/* Ícones dentro dos Cards (Buscar, Empréstimos, Perfil) */
+.card-icon {
+    font-size: 3.5rem;
+    color: var(--theme-primary);
+}
+
+.action-card .card-title {
+    font-family: var(--font-title);
+    color: var(--theme-secondary);
+    font-weight: 700;
+}
