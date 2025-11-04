@@ -37,13 +37,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- 3. FUNÇÕES DE SIMULAÇÃO DE LOGIN ---
   
-  // Função para redirecionar o ALUNO
+  // Função para redirecionar o ALUNO (sem popup)
   function simularLoginAluno(event) {
     event.preventDefault(); // Impede o recarregamento
     window.location.href = 'dashboard-aluno.html'; // Redireciona para o dashboard do ALUNO
   }
 
-  // Função para redirecionar o ADMIN
+  // Função para redirecionar o ADMIN (sem popup)
   function simularLoginAdmin(event) {
     event.preventDefault(); // Impede o recarregamento
     window.location.href = 'dashboard-admin.html'; // Redireciona para o dashboard do ADMIN
