@@ -35,35 +35,43 @@ document.addEventListener('DOMContentLoaded', function () {
     if (adminForm) adminForm.style.display = 'none';
   }
 
-  // --- 3. FUNÇÃO DE SIMULAÇÃO DE LOGIN/CADASTRO ---
-
-  function simularLogin(event) {
-    // Impede o recarregamento da página
-    event.preventDefault();
-
-    // ***** LINHA DO POPUP REMOVIDA DAQUI *****
-    
-    // Redireciona o usuário imediatamente
-    window.location.href = 'dashboard-aluno.html';
+  // --- 3. FUNÇÕES DE SIMULAÇÃO DE LOGIN ---
+  
+  // Função para redirecionar o ALUNO
+  function simularLoginAluno(event) {
+    event.preventDefault(); // Impede o recarregamento
+    window.location.href = 'dashboard-aluno.html'; // Redireciona para o dashboard do ALUNO
   }
 
-  // --- 4. Adiciona a função a TODOS os formulários ---
+  // Função para redirecionar o ADMIN
+  function simularLoginAdmin(event) {
+    event.preventDefault(); // Impede o recarregamento
+    window.location.href = 'dashboard-admin.html'; // Redireciona para o dashboard do ADMIN
+  }
 
+  // --- 4. Adiciona as funções aos formulários CORRETOS ---
+
+  // Formulários de Aluno
   const formStudentLogin = document.getElementById('formStudentLogin');
   const formStudentRegister = document.getElementById('formStudentRegister');
+  
+  // Formulários de Admin
   const formAdminLogin = document.getElementById('formAdminLogin');
   const formAdminRegister = document.getElementById('formAdminRegister');
 
+  // Adiciona o "escutador" para ALUNOS
   if (formStudentLogin) {
-    formStudentLogin.addEventListener('submit', simularLogin);
+    formStudentLogin.addEventListener('submit', simularLoginAluno);
   }
   if (formStudentRegister) {
-    formStudentRegister.addEventListener('submit', simularLogin);
+    formStudentRegister.addEventListener('submit', simularLoginAluno);
   }
+
+  // Adiciona o "escutador" para ADMINS
   if (formAdminLogin) {
-    formAdminLogin.addEventListener('submit', simularLogin);
+    formAdminLogin.addEventListener('submit', simularLoginAdmin);
   }
   if (formAdminRegister) {
-    formAdminRegister.addEventListener('submit', simularLogin);
+    formAdminRegister.addEventListener('submit', simularLoginAdmin);
   }
 });
