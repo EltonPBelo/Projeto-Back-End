@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Aluno - Biblioteca Digital</title>
+    <title>Buscar Livros - Biblioteca Digital</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body class="dashboard-body">
 
@@ -24,57 +22,37 @@
                 <i class="bi bi-book-half me-2"></i>
                 Biblioteca Digital
             </a>
-            
-            <a href="login.html" class="btn btn-outline-light">
-                <i class="bi bi-box-arrow-right me-1"></i> Sair
+            <a href="dashboard-aluno.html" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle me-1"></i> Voltar ao Painel
             </a>
         </div>
     </nav>
 
     <div class="container mt-5">
-        
-        <header class="text-center text-md-start mb-4">
-            <h1 class="theme-title">Bem-vindo, Aluno!</h1>
-            <p class="lead text-muted">O que você gostaria de fazer hoje?</p>
+        <header class="mb-4">
+            <h1 class="theme-title">Busca de Acervo</h1>
+            <p class="lead text-muted">Encontre livros no acervo do Google Books.</p>
         </header>
 
-        <div class="row g-4">
-            
-            <div class="col-md-6 col-lg-4">
-                <div class="card action-card h-100 shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="bi bi-search card-icon"></i>
-                        <h5 class="card-title mt-3">Buscar Livros</h5>
-                        <p class="card-text">Encontre novos títulos no nosso acervo digital e físico.</p>
-                        <a href="buscar-livros.html" class="btn btn-primary stretched-link">Começar Busca</a>
-                    </div>
-                </div>
+        <form class="mb-4" id="formBusca">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" id="termoBusca" placeholder="Digite o título ou autor do livro..." required>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search me-1"></i> Buscar
+                </button>
             </div>
+        </form>
 
-            <div class="col-md-6 col-lg-4">
-                <div class="card action-card h-100 shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="bi bi-journal-bookmark-fill card-icon"></i>
-                        <h5 class="card-title mt-3">Meus Empréstimos</h5>
-                        <p class="card-text">Veja os livros que estão com você e suas datas de devolução.</p>
-                        <a href="#" class="btn btn-primary stretched-link">Ver Meus Livros</a>
-                    </div>
-                </div>
+        <div id="loadingSpinner" class="text-center" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
             </div>
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card action-card h-100 shadow-sm">
-                    <div class="card-body text-center">
-                        <i class="bi bi-person-circle card-icon"></i>
-                        <h5 class="card-title mt-3">Meu Perfil</h5>
-                        <p class="card-text">Atualize seus dados, troque sua senha e veja seu histórico.</p>
-                        <a href="#" class="btn btn-primary stretched-link">Editar Perfil</a>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
+        <div class="row g-4" id="areaResultados">
+            </div>
+
     </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script/buscar.js"></script>
 </body>
 </html>
