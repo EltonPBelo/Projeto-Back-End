@@ -2,31 +2,87 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Seleciona os elementos do DOM
+    // --- Seleção de Elementos ---
     const formModal = document.getElementById('formAdicionarLivro');
     const tabelaCorpo = document.getElementById('tabelaCorpoLivros');
     const linhaVazia = document.getElementById('linhaVazia');
-    
-    // Seleciona o Modal do Bootstrap para podermos escondê-lo via JS
     const modalElement = document.getElementById('modalAdicionarLivro');
-    // 'Modal.getInstance' é a forma moderna de controlar o modal
     const modal = new bootstrap.Modal(modalElement);
 
-    // Adiciona o "escutador" ao formulário do modal
+    // --- Elementos do Modal ---
+    const btnBuscarIsbn = document.getElementById('btnBuscarIsbn');
+    const btnSalvarLivro = document.getElementById('btnSalvarLivro');
+    const inputIsbnBusca = document.getElementById('livroIsbnBusca');
+    const inputIsbnSalvo = document.getElementById('livroIsbn');
+    const inputTitulo = document.getElementById('livroTitulo');
+    const inputAutor = document.getElementById('livroAutor');
+    const isbnSpinner = document.getElementById('isbnSpinner');
+    const isbnHelp = document.getElementById('isbnHelp');
+
+    // --- LÓGICA DE BUSCA DA API ---
+    btnBuscarIsbn.addEventListener('click', async function() {
+        const isbn = inputIsbnBusca.value.trim();
+        if (!isbn) {
+            isbnHelp.textContent = "Por favor, digite um ISBN.";
+            isbnHelp.className = "form-text text-danger";
+            return;
+        }
+
+        // Reseta os campos e mostra o spinner
+        inputTitulo.value = '';
+        inputAutor.value = '';
+        inputIsbnSalvo.value = '';
+        btnSalvarLivro.disabled = true;
+        isbnSpinner.style.display = 'block';
+        isbnHelp.textContent = "Buscando...";
+        isbnHelp.className = "form-text text-muted";
+
+        try {
+            // A API do Google Books pode buscar por ISBN assim:
+            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+            
+            if (!response.ok) throw new Error('Falha na rede');
+            
+            const data = await response.json();
+            
+            if (data.items && data.items.length > 0) {
+                const book = data.items[0].volumeInfo;
+                
+                // PREENCHE OS CAMPOS!
+                inputTitulo.value = book.title || 'Título não encontrado';
+                inputAutor.value = book.authors ? book.authors.join(', ') : 'Autor desconhecido';
+                inputIsbnSalvo.value = isbn; // Salva o ISBN que foi buscado
+                
+                isbnHelp.textContent = "Livro encontrado! Clique em 'Salvar Livro'.";
+                isbnHelp.className = "form-text text-success";
+                btnSalvarLivro.disabled = false; // Habilita o botão de salvar
+            } else {
+                isbnHelp.textContent = "Nenhum livro encontrado com este ISBN.";
+                isbnHelp.className = "form-text text-danger";
+            }
+
+        } catch (error) {
+            console.error("Erro ao buscar ISBN:", error);
+            isbnHelp.textContent = "Erro ao buscar. Verifique a conexão.";
+            isbnHelp.className = "form-text text-danger";
+        } finally {
+            isbnSpinner.style.display = 'none'; // Esconde o spinner
+        }
+    });
+
+    // --- LÓGICA DE SALVAR NA TABELA (Como antes) ---
     formModal.addEventListener('submit', function(event) {
-        event.preventDefault(); // Impede o recarregamento da página
+        event.preventDefault(); // Impede o recarregamento
 
-        // 1. Pega os valores dos inputs
-        const titulo = document.getElementById('livroTitulo').value;
-        const autor = document.getElementById('livroAutor').value;
-        const isbn = document.getElementById('livroIsbn').value;
+        // Pega os valores dos campos (agora preenchidos pela API)
+        const titulo = inputTitulo.value;
+        const autor = inputAutor.value;
+        const isbn = inputIsbnSalvo.value;
 
-        // 2. Remove a linha "Nenhum livro cadastrado" (se ela existir)
         if (linhaVazia) {
             linhaVazia.remove();
         }
 
-        // 3. Cria a nova linha da tabela (HTML)
         const novaLinhaHTML = `
             <tr>
                 <td>${titulo}</td>
@@ -39,22 +95,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 </td>
             </tr>
         `;
-
-        // 4. Insere a nova linha no corpo da tabela
-        // 'insertAdjacentHTML' é mais eficiente que 'innerHTML +='
         tabelaCorpo.insertAdjacentHTML('beforeend', novaLinhaHTML);
 
-        // 5. Limpa o formulário e fecha o modal
-        formModal.reset(); // Limpa os campos
-        modal.hide();      // Fecha o popup
+        // Limpa tudo e fecha o modal
+        formModal.reset();
+        modal.hide();
+        btnSalvarLivro.disabled = true;
+        isbnHelp.textContent = "Busque pelo ISBN para preencher os campos.";
+        isbnHelp.className = "form-text";
     });
 
-    // 6. Adiciona funcionalidade aos botões "Remover" (Usando delegação de evento)
-    // Escutamos cliques na tabela inteira
+    // --- LÓGICA DE REMOVER DA TABELA (Como antes) ---
     tabelaCorpo.addEventListener('click', function(event) {
-        // Verifica se o clique foi em um botão com a classe 'btn-remover'
         if (event.target.classList.contains('btn-remover') || event.target.closest('.btn-remover')) {
-            // Pega a linha da tabela (o 'tr') mais próxima e a remove
             event.target.closest('tr').remove();
         }
     });
