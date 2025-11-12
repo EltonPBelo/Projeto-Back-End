@@ -48,31 +48,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const formSolicitar = document.getElementById('formSolicitarLivro');
 
     // --- LÓGICA DE BUSCA PRINCIPAL ---
-    formBusca.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const termo = termoBusca.value.trim().toLowerCase();
-        if (!termo) return;
+    if (formBusca) {
+        formBusca.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const termo = termoBusca.value.trim().toLowerCase();
+            if (!termo) return;
 
-        // Limpa a tela
-        areaResultadosInternos.innerHTML = '';
-        areaSugestoes.style.display = 'none';
-        areaResultadosApi.innerHTML = '';
+            // Limpa a tela
+            areaResultadosInternos.innerHTML = '';
+            areaSugestoes.style.display = 'none';
+            areaResultadosApi.innerHTML = '';
 
-        // 1. Tenta buscar no Acervo Interno Falso
-        const resultadosInternos = acervoInternoFalso.filter(livro => 
-            livro.titulo.toLowerCase().includes(termo) || 
-            livro.autor.toLowerCase().includes(termo)
-        );
+            // 1. Tenta buscar no Acervo Interno Falso
+            const resultadosInternos = acervoInternoFalso.filter(livro => 
+                livro.titulo.toLowerCase().includes(termo) || 
+                livro.autor.toLowerCase().includes(termo)
+            );
 
-        // 2. Processa os resultados
-        if (resultadosInternos.length > 0) {
-            exibirResultadosInternos(resultadosInternos);
-        } else {
-            areaResultadosInternos.innerHTML = '<p class="col-12 text-center text-muted">Não encontramos este livro em nosso acervo.</p>';
-            areaSugestoes.style.display = 'block';
-            buscarNaApi(termo);
-        }
-    });
+            // 2. Processa os resultados
+            if (resultadosInternos.length > 0) {
+                exibirResultadosInternos(resultadosInternos);
+            } else {
+                areaResultadosInternos.innerHTML = '<p class="col-12 text-center text-muted">Não encontramos este livro em nosso acervo.</p>';
+                areaSugestoes.style.display = 'block';
+                buscarNaApi(termo);
+            }
+        });
+    }
 
     // --- Função: Exibir Resultados INTERNOS ---
     function exibirResultadosInternos(livros) {
@@ -146,56 +148,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Lógica dos Modals ---
 
-    modalAlugarEl.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget; 
-        const titulo = button.getAttribute('data-titulo-livro');
-        const modalTitle = modalAlugarEl.querySelector('#tituloLivroAlugar');
-        modalTitle.textContent = titulo;
-    });
+    if(modalAlugarEl) {
+        modalAlugarEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; 
+            const titulo = button.getAttribute('data-titulo-livro');
+            const modalTitle = modalAlugarEl.querySelector('#tituloLivroAlugar');
+            modalTitle.textContent = titulo;
+        });
+    }
 
-    // **** FUNÇÃO ATUALIZADA ****
     // Modal Alugar: Salva o empréstimo no localStorage
-    formAlugar.addEventListener('submit', function(event) {
-        event.preventDefault();
-        
-        // 1. Coleta os dados do empréstimo
-        const tempoDias = parseInt(document.getElementById('tempoAluguel').value, 10);
-        const titulo = modalAlugarEl.querySelector('#tituloLivroAlugar').textContent;
-        const dataAluguer = new Date(); // Guarda a data e hora exatas de agora
-        
-        // (Simulação de quem alugou. No futuro, viria do login)
-        const aluno = "Aluno Teste (teste@mail.com)"; 
-
-        const novoEmprestimo = {
-            id: Date.now(), // ID único baseado no tempo
-            titulo: titulo,
-            aluno: aluno,
-            dataAluguer: dataAluguer.toISOString(), // Formato padrão para guardar datas
-            diasPrazo: tempoDias
-        };
-
-        // 2. Salva no localStorage
-        try {
-            let emprestimos = JSON.parse(localStorage.getItem('bibliotecaEmprestimos')) || [];
-            emprestimos.push(novoEmprestimo);
-            localStorage.setItem('bibliotecaEmprestimos', JSON.stringify(emprestimos));
+    if(formAlugar) {
+        formAlugar.addEventListener('submit', function(event) {
+            event.preventDefault();
             
-            modalAlugar.hide();
-            alert(`Livro "${titulo}" alugado por ${tempoDias} dias!`);
+            const tempoDias = parseInt(document.getElementById('tempoAluguel').value, 10);
+            const titulo = modalAlugarEl.querySelector('#tituloLivroAlugar').textContent;
+            const dataAluguer = new Date();
+            const aluno = "Aluno Teste (teste@mail.com)"; // Simulação
 
-        } catch (e) {
-            console.error("Erro ao salvar empréstimo:", e);
-            alert("Erro ao processar aluguer.");
-        }
-    });
+            const novoEmprestimo = {
+                id: Date.now(),
+                titulo: titulo,
+                aluno: aluno,
+                dataAluguer: dataAluguer.toISOString(),
+                diasPrazo: tempoDias
+            };
 
-    // Modal Solicitar: Simula o envio da solicitação
-    formSolicitar.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const titulo = document.getElementById('solicitarTitulo').value;
-        modalSolicitar.hide();
-        alert(`Solicitação para o livro "${titulo}" enviada com sucesso! (Simulação)`);
-        formSolicitar.reset();
-    });
+            try {
+                let emprestimos = JSON.parse(localStorage.getItem('bibliotecaEmprestimos')) || [];
+                emprestimos.push(novoEmprestimo);
+                localStorage.setItem('bibliotecaEmprestimos', JSON.stringify(emprestimos));
+                
+                modalAlugar.hide();
+                alert(`Livro "${titulo}" alugado por ${tempoDias} dias!`);
+
+            } catch (e) {
+                console.error("Erro ao salvar empréstimo:", e);
+                alert("Erro ao processar aluguer.");
+            }
+        });
+    }
+
+    // **** NOVA LÓGICA ****
+    // Modal Solicitar: Salva a solicitação no localStorage
+    if (formSolicitar) {
+        formSolicitar.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // 1. Coleta os dados
+            const titulo = document.getElementById('solicitarTitulo').value;
+            const autor = document.getElementById('solicitarAutor').value;
+            const aluno = "Aluno Teste (teste@mail.com)"; // Simulação
+            
+            const novaSolicitacao = {
+                id: Date.now(),
+                titulo: titulo,
+                autor: autor,
+                aluno: aluno
+            };
+
+            // 2. Salva no localStorage
+            try {
+                let solicitacoes = JSON.parse(localStorage.getItem('bibliotecaSolicitacoes')) || [];
+                solicitacoes.push(novaSolicitacao);
+                localStorage.setItem('bibliotecaSolicitacoes', JSON.stringify(solicitacoes));
+
+                modalSolicitar.hide();
+                alert(`Solicitação para o livro "${titulo}" enviada com sucesso!`);
+                formSolicitar.reset();
+
+            } catch (e) {
+                console.error("Erro ao salvar solicitação:", e);
+                alert("Erro ao enviar solicitação.");
+            }
+        });
+    }
 
 });
