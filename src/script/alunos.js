@@ -7,30 +7,70 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabelaCorpo = document.getElementById('tabelaCorpoAlunos');
     const linhaVazia = document.getElementById('linhaVaziaAlunos');
     
-    // Seleciona o Modal do Bootstrap
     const modalElement = document.getElementById('modalAdicionarAluno');
     const modal = new bootstrap.Modal(modalElement);
 
-    // Adiciona o "escutador" ao formulário do modal
+    // --- CARREGA OS ALUNOS GUARDADOS ASSIM QUE A PÁGINA ABRE ---
+    carregarAlunosDoStorage();
+
+    // --- Adiciona o "escutador" ao formulário do modal (quando o ADMIN adiciona) ---
     formModal.addEventListener('submit', function(event) {
-        event.preventDefault(); // Impede o recarregamento da página
+        event.preventDefault(); 
 
         // 1. Pega os valores dos inputs
         const nome = document.getElementById('alunoNome').value;
         const email = document.getElementById('alunoEmail').value;
         const matricula = document.getElementById('alunoMatricula').value;
 
-        // 2. Remove a linha "Nenhum aluno cadastrado" (se ela existir)
-        if (linhaVazia) {
-            linhaVazia.remove();
+        const novoAluno = { nome, email, matricula };
+
+        // 2. Adiciona na tabela (feedback visual)
+        adicionarAlunoNaTabela(novoAluno);
+
+        // 3. Salva no Storage
+        salvarAlunoNoStorage(novoAluno);
+
+        // 4. Limpa e fecha
+        formModal.reset(); 
+        modal.hide();      
+    });
+
+    // --- Adiciona funcionalidade aos botões "Remover" ---
+    tabelaCorpo.addEventListener('click', function(event) {
+        const btnRemover = event.target.closest('.btn-remover-aluno');
+        if (btnRemover) {
+            const linha = btnRemover.closest('tr');
+            // Pega a matrícula da linha para saber quem remover
+            const matriculaParaRemover = linha.dataset.matricula; 
+            
+            // Remove do storage
+            removerAlunoDoStorage(matriculaParaRemover);
+            
+            // Remove da tabela
+            linha.remove();
+
+            // Verifica se a tabela ficou vazia
+            if (tabelaCorpo.rows.length === 0) {
+                tabelaCorpo.innerHTML = '<tr id="linhaVaziaAlunos"><td colspan="4" class="text-center text-muted">Nenhum aluno cadastrado.</td></tr>';
+            }
+        }
+    });
+
+    // --- Funções Auxiliares do LocalStorage ---
+
+    function adicionarAlunoNaTabela(aluno) {
+        // Remove a linha "vazia" se ela existir
+        const linhaVaziaEl = document.getElementById('linhaVaziaAlunos');
+        if (linhaVaziaEl) {
+            linhaVaziaEl.remove();
         }
 
-        // 3. Cria a nova linha da tabela (HTML)
+        // Adiciona 'data-matricula' na linha para sabermos quem remover
         const novaLinhaHTML = `
-            <tr>
-                <td>${nome}</td>
-                <td>${email}</td>
-                <td>${matricula}</td>
+            <tr data-matricula="${aluno.matricula}">
+                <td>${aluno.nome}</td>
+                <td>${aluno.email}</td>
+                <td>${aluno.matricula}</td>
                 <td>
                     <button class="btn btn-danger btn-sm btn-remover-aluno">
                         <i class="bi bi-trash-fill"></i> Remover
@@ -38,22 +78,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 </td>
             </tr>
         `;
-
-        // 4. Insere a nova linha no corpo da tabela
         tabelaCorpo.insertAdjacentHTML('beforeend', novaLinhaHTML);
+    }
 
-        // 5. Limpa o formulário e fecha o modal
-        formModal.reset(); // Limpa os campos
-        modal.hide();      // Fecha o popup
-    });
+    function salvarAlunoNoStorage(aluno) {
+        // Pega o acervo atual, ou cria um array vazio
+        let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+        
+        // Adiciona o novo aluno
+        alunos.push(aluno);
+        
+        // Salva o acervo atualizado de volta no localStorage
+        localStorage.setItem('bibliotecaAlunos', JSON.stringify(alunos));
+    }
 
-    // 6. Adiciona funcionalidade aos botões "Remover"
-    tabelaCorpo.addEventListener('click', function(event) {
-        // Verifica se o clique foi em um botão com a classe 'btn-remover-aluno'
-        if (event.target.classList.contains('btn-remover-aluno') || event.target.closest('.btn-remover-aluno')) {
-            // Pega a linha da tabela (o 'tr') mais próxima e a remove
-            event.target.closest('tr').remove();
-        }
-    });
+    function carregarAlunosDoStorage() {
+        let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+        if (alunos.length === 0) return; // Não faz nada se estiver vazio
+
+        // Se houver livros, adiciona cada um na tabela
+        alunos.forEach(aluno => {
+            adicionarAlunoNaTabela(aluno);
+        });
+    }
+
+    function removerAlunoDoStorage(matricula) {
+        let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+        // Cria um novo array com todos os alunos, MENOS o que tem a matrícula correspondente
+        const novoAlunos = alunos.filter(aluno => aluno.matricula !== matricula);
+        // Salva o novo acervo
+        localStorage.setItem('bibliotecaAlunos', JSON.stringify(novoAlunos));
+    }
 
 });

@@ -37,19 +37,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- 3. FUNÇÕES DE SIMULAÇÃO DE LOGIN ---
   
-  // Função para redirecionar o ALUNO (sem popup)
+  // Função para redirecionar o ALUNO (Login)
   function simularLoginAluno(event) {
     event.preventDefault(); // Impede o recarregamento
     window.location.href = 'dashboard-aluno.html'; // Redireciona para o dashboard do ALUNO
   }
 
-  // Função para redirecionar o ADMIN (sem popup)
+  // Função para redirecionar o ADMIN
   function simularLoginAdmin(event) {
     event.preventDefault(); // Impede o recarregamento
     window.location.href = 'dashboard-admin.html'; // Redireciona para o dashboard do ADMIN
   }
 
-  // --- 4. Adiciona as funções aos formulários CORRETOS ---
+  // --- 4. Adiciona as funções aos formulários ---
 
   // Formulários de Aluno
   const formStudentLogin = document.getElementById('formStudentLogin');
@@ -59,12 +59,38 @@ document.addEventListener('DOMContentLoaded', function () {
   const formAdminLogin = document.getElementById('formAdminLogin');
   const formAdminRegister = document.getElementById('formAdminRegister');
 
-  // Adiciona o "escutador" para ALUNOS
+  // Adiciona o "escutador" para LOGIN de Aluno
   if (formStudentLogin) {
     formStudentLogin.addEventListener('submit', simularLoginAluno);
   }
+
+  // **** NOVA LÓGICA DE REGISTO DE ALUNO ****
   if (formStudentRegister) {
-    formStudentRegister.addEventListener('submit', simularLoginAluno);
+    formStudentRegister.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        // 1. Coletar dados do formulário
+        const nome = document.getElementById('studentRegName').value;
+        const email = document.getElementById('studentRegEmail').value;
+        const matricula = document.getElementById('studentRegId').value;
+        
+        const novoAluno = { nome, email, matricula };
+
+        // 2. Salvar no localStorage
+        try {
+            // Pega a lista atual (ou um array vazio)
+            let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+            // Adiciona o novo aluno
+            alunos.push(novoAluno);
+            // Salva a lista atualizada
+            localStorage.setItem('bibliotecaAlunos', JSON.stringify(alunos));
+        } catch (e) {
+            console.error("Erro ao salvar aluno no localStorage:", e);
+        }
+
+        // 3. Redirecionar (como antes)
+        window.location.href = 'dashboard-aluno.html';
+    });
   }
 
   // Adiciona o "escutador" para ADMINS

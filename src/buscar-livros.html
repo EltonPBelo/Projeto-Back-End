@@ -30,8 +30,8 @@
 
     <div class="container mt-5">
         <header class="mb-4">
-            <h1 class="theme-title">Busca de Acervo</h1>
-            <p class="lead text-muted">Encontre livros no acervo do Google Books.</p>
+            <h1 class="theme-title">Busca de Acervo Interno</h1>
+            <p class="lead text-muted">Procure por livros disponíveis na nossa biblioteca.</p>
         </header>
 
         <form class="mb-4" id="formBusca">
@@ -49,10 +49,75 @@
             </div>
         </div>
 
-        <div class="row g-4" id="areaResultados">
+        <div class="row g-4" id="areaResultadosInternos">
             </div>
 
-    </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <div id="areaSugestoes" class="mt-5" style="display: none;">
+            <hr>
+            <h4 class="theme-title">Não encontrou?</h4>
+            <p>Não encontramos este título no nosso acervo. Talvez quisesse dizer um destes (do acervo do Google)?</p>
+            <div class="row g-4" id="areaResultadosApi">
+                </div>
+            <button class="btn btn-secondary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#modalSolicitarLivro">
+                <i class="bi bi-send-plus-fill me-1"></i> Solicitar Livro
+            </button>
+        </div>
+
+    </div> <div class="modal fade" id="modalAlugarLivro" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title theme-title">Alugar Livro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formAlugarLivro">
+                    <div class="modal-body">
+                        <h6 id="tituloLivroAlugar"></h6>
+                        <p>Por quanto tempo deseja alugar este livro?</p>
+                        <select class="form-select" id="tempoAluguel" required>
+                            <option value="7">7 dias</option>
+                            <option value="14">14 dias</option>
+                            <option value="30">30 dias</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Confirmar Aluguer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="modalSolicitarLivro" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title theme-title">Solicitar Livro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formSolicitarLivro">
+                    <div class="modal-body">
+                        <p>Preencha os dados do livro que você gostaria que a biblioteca adquirisse.</p>
+                        <div class="mb-3">
+                            <label for="solicitarTitulo" class="form-label">Título do Livro</label>
+                            <input type="text" class="form-control" id="solicitarTitulo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="solicitarAutor" class="form-label">Autor</label>
+                            <input type="text" class="form-control" id="solicitarAutor" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Enviar Solicitação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script/buscar.js"></script>
 </body>
 </html>
