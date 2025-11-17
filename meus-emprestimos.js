@@ -1,14 +1,21 @@
 /* eslint-env browser */
 
+// **** LÓGICA CORRIGIDA ****
 // SIMULAÇÃO DE LOGIN:
-// Este nome DEVE ser idêntico ao que está em 'script/buscar.js'
-const ALUNO_LOGADO_SIMULADO = "Aluno Teste (teste@mail.com)";
+// Pega o primeiro aluno da lista (mesma lógica do perfil.js)
+let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+let ALUNO_LOGADO_SIMULADO = "aluno.desconhecido@mail.com"; // Valor padrão
+if (alunos.length > 0) {
+    ALUNO_LOGADO_SIMULADO = alunos[0].email; // Filtra pelo email do primeiro aluno
+}
+// **** FIM DA LÓGICA CORRIGIDA ****
+
 
 document.addEventListener('DOMContentLoaded', function () {
 
     const tabelaCorpo = document.getElementById('tabelaMeusEmprestimos');
 
-    // Função para calcular o prazo e o status (igual à do admin)
+    // Função para calcular o prazo e o status
     function calcularStatus(dataAluguerISO, diasPrazo) {
         const dataAluguer = new Date(dataAluguerISO);
         const dataDevolucao = new Date(dataAluguer.getTime());
@@ -24,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         
         return {
-            prazo: dataDevolucao.toLocaleDateString('pt-BR'), // Formata a data para dd/mm/aaaa
+            prazo: dataDevolucao.toLocaleDateString('pt-BR'), 
             status: status
         };
     }
@@ -33,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function carregarMeusEmprestimos() {
         const todosEmprestimos = JSON.parse(localStorage.getItem('bibliotecaEmprestimos')) || [];
         
-        // *** A GRANDE DIFERENÇA: FILTRAMOS OS RESULTADOS ***
+        // Filtra os empréstimos pelo aluno "logado"
         const meusEmprestimos = todosEmprestimos.filter(e => e.aluno === ALUNO_LOGADO_SIMULADO);
 
         if (meusEmprestimos.length === 0) {
@@ -41,15 +48,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Limpa a tabela (remove a linha "vazia")
         tabelaCorpo.innerHTML = '';
 
         meusEmprestimos.forEach(emprestimo => {
             const { prazo, status } = calcularStatus(emprestimo.dataAluguer, emprestimo.diasPrazo);
-            
             const dataAluguerFormatada = new Date(emprestimo.dataAluguer).toLocaleDateString('pt-BR');
 
-            // Tabela simplificada (sem colunas de Aluno ou Ações)
             const novaLinhaHTML = `
                 <tr>
                     <td>${emprestimo.titulo}</td>
@@ -62,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Carregar os dados assim que a página abre ---
     carregarMeusEmprestimos();
 
 });

@@ -2,182 +2,202 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     
-    // 1. URLs da API (Obrigatório) 
-    const API_URL_LIVROS = 'http://localhost:3002/api/livros';
-    const API_URL_EMPRESTIMOS = 'http://localhost:3002/api/emprestimos/novo';
-    
-    // 2. Token do Aluno (Fundamental para Emprestar) 
-    // Pega o token que o 'login.js' guardou
-    const authToken = localStorage.getItem('authToken');
-
-    // 3. Seleção de Elementos (Como o teu original)
+    // --- Seleção de Elementos ---
     const formBusca = document.getElementById('formBusca');
     const termoBusca = document.getElementById('termoBusca');
-    const areaResultados = document.getElementById('areaResultados');
     const loadingSpinner = document.getElementById('loadingSpinner');
+    const areaResultadosInternos = document.getElementById('areaResultadosInternos');
+    const areaSugestoes = document.getElementById('areaSugestoes');
+    const areaResultadosApi = document.getElementById('areaResultadosApi');
+    const modalAlugarEl = document.getElementById('modalAlugarLivro');
+    const modalAlugar = new bootstrap.Modal(modalAlugarEl);
+    const formAlugar = document.getElementById('formAlugarLivro');
+    const modalSolicitarEl = document.getElementById('modalSolicitarLivro');
+    const modalSolicitar = new bootstrap.Modal(modalSolicitarEl);
+    const formSolicitar = document.getElementById('formSolicitarLivro');
 
-    // Se o aluno não está logado, ele não pode pesquisar/emprestar.
-    if (!authToken) {
-        areaResultados.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-danger" role="alert">
-                    Não foi possível carregar o acervo. Por favor, 
-                    <a href="login.html" class="alert-link">faça o login</a> novamente.
-                </div>
-            </div>
-        `;
-        formBusca.style.display = 'none'; // Esconde o formulário de busca
-        return; // Para a execução
+    // --- LÓGICA DE BUSCA PRINCIPAL (Lendo do Acervo REAL) ---
+    if (formBusca) {
+        formBusca.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const termo = termoBusca.value.trim().toLowerCase();
+            if (!termo) return;
+
+            areaResultadosInternos.innerHTML = '';
+            areaSugestoes.style.display = 'none';
+            areaResultadosApi.innerHTML = '';
+
+            const acervoReal = JSON.parse(localStorage.getItem('bibliotecaAcervo')) || [];
+            const resultadosInternos = acervoReal.filter(livro => 
+                livro.titulo.toLowerCase().includes(termo) || 
+                livro.autor.toLowerCase().includes(termo)
+            );
+
+            if (resultadosInternos.length > 0) {
+                exibirResultadosInternos(resultadosInternos);
+            } else {
+                areaResultadosInternos.innerHTML = '<p class="col-12 text-center text-muted">Não encontramos este livro em nosso acervo.</p>';
+                areaSugestoes.style.display = 'block';
+                buscarNaApi(termo); 
+            }
+        });
     }
 
-    // 4. Lógica de BUSCA (CORRIGIDA)
-    formBusca.addEventListener('submit', async function(event) {
-        event.preventDefault(); 
-        
-        const termo = termoBusca.value.trim().toLowerCase(); // Pega o termo em minúsculas
-        
-        if (!termo) return; 
-
-        // Prepara a interface (igual ao teu original)
-        areaResultados.innerHTML = ''; 
-        loadingSpinner.style.display = 'block'; 
-
-        try {
-            // 1. CHAMA A NOSSA PRÓPRIA API DE LIVROS
-            const response = await fetch(API_URL_LIVROS, {
-                headers: {
-                    // Nota: O GET /api/livros é público, mas se fosse protegido,
-                    // seria preciso enviar o token aqui também.
-                    'Authorization': `Bearer ${authToken}` 
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error('Falha ao buscar os livros da biblioteca.');
-            }
-
-            const todosOsLivros = await response.json();
-            
-            // 2. FILTRA OS RESULTADOS AQUI NO FRONTEND
-            // Filtra por título OU autor que contenham o termo da busca
-            const livrosFiltrados = todosOsLivros.filter(livro => {
-                return livro.titulo.toLowerCase().includes(termo) || 
-                       livro.autor.toLowerCase().includes(termo);
-            });
-            
-            // 3. EXIBE OS RESULTADOS
-            exibirResultados(livrosFiltrados);
-
-        } catch (error) {
-            console.error('Erro na busca:', error);
-            areaResultados.innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger" role="alert">
-                        ${error.message}
-                    </div>
-                </div>
-            `;
-        } finally {
-            loadingSpinner.style.display = 'none';
-        }
-    });
-
-    // --- 5. Função para "Desenhar" os Cards (CORRIGIDA) ---
-    function exibirResultados(livros) {
-        // Se a busca não retornou nada
-        if (livros.length === 0) {
-            areaResultados.innerHTML = `
-                <div class="col-12">
-                    <p class="text-center text-muted">Nenhum livro encontrado com esse termo.</p>
-                </div>
-            `;
-            return;
-        }
-
+    // --- Função: Exibir Resultados INTERNOS ---
+    function exibirResultadosInternos(livros) {
         let htmlResultados = '';
-
         livros.forEach(livro => {
-            // Não temos mais a capa do Google, então usamos um placeholder
-            const capaPlaceholder = 'https://via.placeholder.com/128x192.png?text=Livro';
-
-            // Monta o HTML do Card (agora com os dados da NOSSA API)
             htmlResultados += `
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="card h-100 shadow-sm book-card">
-                        <img src="${capaPlaceholder}" class="card-img-top" alt="Capa do livro" style="height: 250px; object-fit: contain; padding: 10px;">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        <img src="${livro.capaUrl || 'https://via.placeholder.com/128x192.png?text=Sem+Capa'}" class="card-img-top" alt="${livro.titulo}" style="height: 250px; object-fit: contain; padding: 10px;">
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">${livro.titulo}</h5> 
+                            <h5 class="card-title">${livro.titulo}</h5>
                             <p class="card-text text-muted">${livro.autor}</p>
-                            
-                            <button 
-                                class="btn btn-success mt-auto btn-emprestar" 
-                                data-livro-id="${livro._id}">
-                                Emprestar
+                            <button class="btn btn-primary mt-auto btn-alugar" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalAlugarLivro"
+                                    data-titulo-livro="${livro.titulo}">
+                                Alugar
                             </button>
                         </div>
                     </div>
                 </div>
             `;
         });
-
-        // Insere todo o HTML gerado na página
-        areaResultados.innerHTML = htmlResultados;
+        areaResultadosInternos.innerHTML = htmlResultados;
     }
 
-    // 6. Lógica de EMPRÉSTIMO (NOVO e FUNDAMENTAL) 
-    /**
-     * Escuta cliques na área de resultados. Se o clique for em
-     * um botão 'btn-emprestar', chama a API de empréstimos.
-     */
-    areaResultados.addEventListener('click', async function(event) {
-        const botaoEmprestar = event.target.closest('.btn-emprestar');
-
-        // Se o clique não foi num botão "Emprestar", ignora
-        if (!botaoEmprestar) {
-            return;
-        }
-
-        // Pega o ID do livro que guardámos no 'data-livro-id'
-        const livroId = botaoEmprestar.dataset.livroId;
-
-        // Desativa o botão para evitar cliques duplos
-        botaoEmprestar.disabled = true;
-        botaoEmprestar.textContent = 'Processando...';
-
+    // --- Função: Chamar API do GOOGLE para sugestões ---
+    async function buscarNaApi(termo) {
+        loadingSpinner.style.display = 'block';
         try {
-            // CHAMA A API DE EMPRÉSTIMOS
-            const response = await fetch(API_URL_EMPRESTIMOS, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Envia o token do aluno para o 'authMiddleware' do backend
-                    'Authorization': `Bearer ${authToken}` 
-                },
-                // Envia o ID do livro no corpo (como o backend 'emprestimoRoutes.js' espera)
-                body: JSON.stringify({ livroId: livroId }) 
-            });
-
+            const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${termo}&maxResults=4`);
+            if (!response.ok) throw new Error('Falha na busca da API');
             const data = await response.json();
-
-            if (!response.ok) {
-                // Se o backend der um erro (ex: livro já emprestado), mostra a mensagem
-                throw new Error(data.message || 'Erro ao tentar emprestar.');
+            if (data.items && data.items.length > 0) {
+                exibirResultadosApi(data.items);
+            } else {
+                areaResultadosApi.innerHTML = '<p class="col-12 text-center text-muted">Não encontramos sugestões no Google Books.</p>';
             }
-
-            // Sucesso!
-            alert('Livro emprestado com sucesso!');
-            botaoEmprestar.textContent = 'Emprestado!';
-            botaoEmprestar.classList.remove('btn-success');
-            botaoEmprestar.classList.add('btn-secondary');
-
         } catch (error) {
-            console.error('Erro ao emprestar:', error);
-            alert(`Erro: ${error.message}`);
-            
-            // Reativa o botão em caso de erro
-            botaoEmprestar.disabled = false;
-            botaoEmprestar.textContent = 'Emprestar';
+            console.error('Erro na API:', error);
+            areaResultadosApi.innerHTML = '<p class="col-12 text-center text-danger">Erro ao carregar sugestões.</p>';
+        } finally {
+            loadingSpinner.style.display = 'none';
         }
-    });
+    }
+
+    // --- Função: Exibir Resultados da API (Sugestões) ---
+    function exibirResultadosApi(livros) {
+        let htmlResultados = '';
+        livros.forEach(livro => {
+            const info = livro.volumeInfo;
+            const titulo = info.title || 'Título indisponível';
+            const autores = info.authors ? info.authors.join(', ') : 'Autor desconhecido';
+            const capa = info.imageLinks?.thumbnail || 'https://via.placeholder.com/128x192.png?text=Sem+Capa';
+            htmlResultados += `
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm" style="opacity: 0.7;">
+                        <img src="${capa}" class="card-img-top" alt="${titulo}" style="height: 250px; object-fit: contain; padding: 10px;">
+                        <div class="card-body">
+                            <h5 class="card-title">${titulo}</h5>
+                            <p class="card-text text-muted">${autores}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        areaResultadosApi.innerHTML = htmlResultados;
+    }
+
+
+    // --- Lógica dos Modals ---
+
+    if(modalAlugarEl) {
+        modalAlugarEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; 
+            const titulo = button.getAttribute('data-titulo-livro');
+            const modalTitle = modalAlugarEl.querySelector('#tituloLivroAlugar');
+            modalTitle.textContent = titulo;
+        });
+    }
+
+    // **** FUNÇÃO ATUALIZADA ****
+    if(formAlugar) {
+        formAlugar.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const tempoDias = parseInt(document.getElementById('tempoAluguel').value, 10);
+            const titulo = modalAlugarEl.querySelector('#tituloLivroAlugar').textContent;
+            const dataAluguer = new Date();
+            
+            // --- LÓGICA CORRIGIDA ---
+            let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+            let alunoEmail = "aluno.desconhecido@mail.com"; 
+            if (alunos.length > 0) {
+                alunoEmail = alunos[0].email; 
+            }
+            const aluno = alunoEmail;
+            // --- FIM DA LÓGICA CORRIGIDA ---
+
+            const novoEmprestimo = {
+                id: Date.now(),
+                titulo: titulo,
+                aluno: aluno, 
+                dataAluguer: dataAluguer.toISOString(),
+                diasPrazo: tempoDias
+            };
+
+            try {
+                let emprestimos = JSON.parse(localStorage.getItem('bibliotecaEmprestimos')) || [];
+                emprestimos.push(novoEmprestimo);
+                localStorage.setItem('bibliotecaEmprestimos', JSON.stringify(emprestimos));
+                modalAlugar.hide();
+                alert(`Livro "${titulo}" alugado por ${tempoDias} dias!`);
+            } catch (e) {
+                console.error("Erro ao salvar empréstimo:", e);
+                alert("Erro ao processar aluguer.");
+            }
+        });
+    }
+
+    // **** FUNÇÃO ATUALIZADA ****
+    if (formSolicitar) {
+        formSolicitar.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const titulo = document.getElementById('solicitarTitulo').value;
+            const autor = document.getElementById('solicitarAutor').value;
+            
+            // --- LÓGICA CORRIGIDA ---
+            let alunos = JSON.parse(localStorage.getItem('bibliotecaAlunos')) || [];
+            let alunoEmail = "aluno.desconhecido@mail.com";
+            if (alunos.length > 0) {
+                alunoEmail = alunos[0].email;
+            }
+            const aluno = alunoEmail;
+            // --- FIM DA LÓGICA CORRIGIDA ---
+            
+            const novaSolicitacao = {
+                id: Date.now(),
+                titulo: titulo,
+                autor: autor,
+                aluno: aluno 
+            };
+
+            try {
+                let solicitacoes = JSON.parse(localStorage.getItem('bibliotecaSolicitacoes')) || [];
+                solicitacoes.push(novaSolicitacao);
+                localStorage.setItem('bibliotecaSolicitacoes', JSON.stringify(solicitacoes));
+                modalSolicitar.hide();
+                alert(`Solicitação para o livro "${titulo}" enviada com sucesso!`);
+                formSolicitar.reset();
+            } catch (e) {
+                console.error("Erro ao salvar solicitação:", e);
+                alert("Erro ao enviar solicitação.");
+            }
+        });
+    }
 
 });
