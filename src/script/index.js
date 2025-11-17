@@ -1,27 +1,31 @@
-//bibliotecas
+// index.js (Corrigido)
+
+// 1. Bibliotecas
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const livroRoutes = require('./routes/livroRoutes');
-
-//configurações
-const app = express();
-app.use(bodyParser.json());
-app.use(cors());
-
-//rotas
-app.use('/livros', livroRoutes);
-
-//iniciar o servidor
-const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-//Bd connection
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/biblioteca', {
+// 2. Importar as nossas rotas
+const livroRoutes = require('./routes/livroRoutes');
+const alunoRoutes = require('./routes/alunoRoutes'); // NOVO: Importa as rotas de aluno
+const emprestimoRoutes = require('./routes/emprestimoRoutes'); 
+// ... (código de ligação ao BD) ...
+
+// 2.1 Definir as Rotas da API
+app.use('/api/livros', livroRoutes);
+app.use('/api/alunos', alunoRoutes);
+const adminRoutes = require('./routes/adminRoutes');
+
+// 3. Configurações
+const app = express();
+app.use(cors()); // Permite comunicação entre domínios
+app.use(bodyParser.json()); // Lê o corpo das requisições como JSON
+
+
+// 4. Ligar ao Banco de Dados (BD)
+const MONGO_URL = 'mongodb://localhost:27017/biblioteca';
+mongoose.connect(MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
@@ -30,107 +34,21 @@ mongoose.connect('mongodb://localhost:27017/biblioteca', {
     console.error('Erro ao conectar ao banco de dados MongoDB:', err);
 });
 
-// O modelo de Livro foi movido para /models/livroModel.js;
+// 5. Definir as Rotas da API
+// Diz ao Express: "Qualquer pedido para /api/livros, usa o ficheiro livroRoutes"
+app.use('/api/livros', livroRoutes);
 
-const Livro = mongoose.model('Livro', livroSchema);
+// Diz ao Express: "Qualquer pedido para /api/alunos, usa o ficheiro alunoRoutes"
+app.use('/api/alunos', alunoRoutes);
 
-// Exportando tanto o app quanto o modelo Livro
-module.exports = { app, Livro };
+// Diz ao Express: "Qualquer pedido para /api/admin, usa o ficheiro adminRoutes"
+app.use('/api/admin', adminRoutes);
 
-//rotas/livroRoutes.js
-const express = require('express');
-const router = express.Router();
-const Livro = require('../models/livro');
+// NOVO: Rotas de Empréstimos
+app.use('/api/emprestimos', emprestimoRoutes); 
 
-// Criar um novo livro
-router.post('/', async (req, res) => {
-    try {
-        const novoLivro = new Livro(req.body);
-        const livroSalvo = await novoLivro.save();
-        res.status(201).json(livroSalvo);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
+// 6. Iniciar o Servidor
+const PORT = process.env.PORT || 3002;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-// Obter todos os livros
-router.get('/', async (req, res) => {
-    try {
-        const livros = await Livro.find();
-        res.json(livros);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-}); 
-
-//simulação de dados livros
-router.get('/simulacao', (req, res) => {
-    const livrosSimulados = [
-        { titulo: 'O Senhor dos Anéis', autor: 'J.R.R. Tolkien', anoPublicacao: 1954, genero: 'Fantasia' },
-        { titulo: '1984', autor: 'George Orwell', anoPublicacao: 1949, genero: 'Distopia' },
-        { titulo: 'Dom Quixote', autor: 'Miguel de Cervantes', anoPublicacao: 1605, genero: 'Aventura' }
-    ];
-    res.json(livrosSimulados);
-});
-
-// Obter um livro por ID
-router.get('/:id', async (req, res) => {
-    try {
-        const livro = await Livro.findById(req.params.id);
-        if (!livro) return res.status(404).json({ message: 'Livro não encontrado' });
-        res.json(livro);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// Atualizar um livro por ID
-router.put('/:id', async (req, res) => {
-    try {
-        const livroAtualizado = await Livro.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!livroAtualizado) return res.status(404).json({ message: 'Livro não encontrado' });
-        res.json(livroAtualizado);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
-
-// Deletar um livro por ID
-router.delete('/:id', async (req, res) => {
-    try {
-        const livroDeletado = await Livro.findByIdAndDelete(req.params.id);
-        if (!livroDeletado) return res.status(404).json({ message: 'Livro não encontrado' });
-        res.json({ message: 'Livro deletado com sucesso' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-module.exports = router;
-
-//models/livro.js
-const mongoose = require('mongoose');
-
-const livroSchema = new mongoose.Schema({
-    titulo: { 
-        type: String,
-        required: true
-    },
-    autor: { 
-        type: String,
-        required: true
-    },
-    anoPublicacao: { 
-        type: Number,
-        required: true
-    },
-    genero: { 
-        type: String,
-        required: true
-    }
-});
-
-const livroModel = mongoose.model('Livro', livroSchema);
-
-module.exports = Livro;
-
