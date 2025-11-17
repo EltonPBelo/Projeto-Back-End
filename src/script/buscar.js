@@ -1,30 +1,7 @@
 /* eslint-env browser */
 
-// --- NOSSO ACERVO INTERNO FALSO (Simulação) ---
-const acervoInternoFalso = [
-    { 
-        id: 1, 
-        titulo: "O Senhor dos Anéis", 
-        autor: "J.R.R. Tolkien", 
-        isbn: "9780261102385", 
-        capa: "https://via.placeholder.com/128x192.png?text=Capa+Interna" 
-    },
-    { 
-        id: 2, 
-        titulo: "O Guia do Mochileiro das Galáxias", 
-        autor: "Douglas Adams", 
-        isbn: "9780345391803",
-        capa: "https://via.placeholder.com/128x192.png?text=Capa+Interna"
-    },
-    { 
-        id: 3, 
-        titulo: "Duna", 
-        autor: "Frank Herbert", 
-        isbn: "9780441172719",
-        capa: "https://via.placeholder.com/128x192.png?text=Capa+Interna"
-    }
-];
-// ----------------------------------------------------
+// O ACERVO FALSO FOI REMOVIDO DAQUI
+// Agora vamos ler o acervo real do localStorage
 
 document.addEventListener('DOMContentLoaded', function () {
     
@@ -47,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalSolicitar = new bootstrap.Modal(modalSolicitarEl);
     const formSolicitar = document.getElementById('formSolicitarLivro');
 
-    // --- LÓGICA DE BUSCA PRINCIPAL ---
+    // --- LÓGICA DE BUSCA PRINCIPAL (ATUALIZADA) ---
     if (formBusca) {
         formBusca.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -59,31 +36,36 @@ document.addEventListener('DOMContentLoaded', function () {
             areaSugestoes.style.display = 'none';
             areaResultadosApi.innerHTML = '';
 
-            // 1. Tenta buscar no Acervo Interno Falso
-            const resultadosInternos = acervoInternoFalso.filter(livro => 
+            // 1. Lê o Acervo REAL do localStorage
+            const acervoReal = JSON.parse(localStorage.getItem('bibliotecaAcervo')) || [];
+
+            const resultadosInternos = acervoReal.filter(livro => 
                 livro.titulo.toLowerCase().includes(termo) || 
                 livro.autor.toLowerCase().includes(termo)
             );
 
             // 2. Processa os resultados
             if (resultadosInternos.length > 0) {
+                // ENCONTROU! Exibe os resultados internos.
                 exibirResultadosInternos(resultadosInternos);
             } else {
+                // NÃO ENCONTROU! Mostra a seção de sugestões.
                 areaResultadosInternos.innerHTML = '<p class="col-12 text-center text-muted">Não encontramos este livro em nosso acervo.</p>';
                 areaSugestoes.style.display = 'block';
-                buscarNaApi(termo);
+                buscarNaApi(termo); // Chama a API do Google para sugestões
             }
         });
     }
 
-    // --- Função: Exibir Resultados INTERNOS ---
+    // --- Função: Exibir Resultados INTERNOS (ATUALIZADA) ---
     function exibirResultadosInternos(livros) {
         let htmlResultados = '';
         livros.forEach(livro => {
+            // USA 'livro.capaUrl' (que o admin salvou) em vez de 'livro.capa'
             htmlResultados += `
                 <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm">
-                        <img src="${livro.capa}" class="card-img-top" alt="${livro.titulo}" style="height: 250px; object-fit: contain; padding: 10px;">
+                        <img src="${livro.capaUrl}" class="card-img-top" alt="${livro.titulo}" style="height: 250px; object-fit: contain; padding: 10px;">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">${livro.titulo}</h5>
                             <p class="card-text text-muted">${livro.autor}</p>
@@ -101,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
         areaResultadosInternos.innerHTML = htmlResultados;
     }
 
-    // --- Função: Chamar API do GOOGLE para sugestões ---
+    // --- Função: Chamar API do GOOGLE para sugestões (Sem alteração) ---
     async function buscarNaApi(termo) {
         loadingSpinner.style.display = 'block';
         try {
@@ -122,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Função: Exibir Resultados da API (Sugestões) ---
+    // --- Função: Exibir Resultados da API (Sugestões) (Sem alteração) ---
     function exibirResultadosApi(livros) {
         let htmlResultados = '';
         livros.forEach(livro => {
@@ -146,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         areaResultadosApi.innerHTML = htmlResultados;
     }
 
-    // --- Lógica dos Modals ---
+    // --- Lógica dos Modals (Sem alteração) ---
 
     if(modalAlugarEl) {
         modalAlugarEl.addEventListener('show.bs.modal', function (event) {
@@ -157,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Modal Alugar: Salva o empréstimo no localStorage
     if(formAlugar) {
         formAlugar.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -165,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const tempoDias = parseInt(document.getElementById('tempoAluguel').value, 10);
             const titulo = modalAlugarEl.querySelector('#tituloLivroAlugar').textContent;
             const dataAluguer = new Date();
-            const aluno = "Aluno Teste (teste@mail.com)"; // Simulação
+            const aluno = "Aluno Teste (teste@mail.com)"; 
 
             const novoEmprestimo = {
                 id: Date.now(),
@@ -190,16 +171,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // **** NOVA LÓGICA ****
-    // Modal Solicitar: Salva a solicitação no localStorage
     if (formSolicitar) {
         formSolicitar.addEventListener('submit', function(event) {
             event.preventDefault();
             
-            // 1. Coleta os dados
             const titulo = document.getElementById('solicitarTitulo').value;
             const autor = document.getElementById('solicitarAutor').value;
-            const aluno = "Aluno Teste (teste@mail.com)"; // Simulação
+            const aluno = "Aluno Teste (teste@mail.com)";
             
             const novaSolicitacao = {
                 id: Date.now(),
@@ -208,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 aluno: aluno
             };
 
-            // 2. Salva no localStorage
             try {
                 let solicitacoes = JSON.parse(localStorage.getItem('bibliotecaSolicitacoes')) || [];
                 solicitacoes.push(novaSolicitacao);
